@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="title-container text-center my-4">
+        <h1 class="title-text">Chromebook Loan System</h1>
+    </div>
+    
+    <div class="row text-center">
+        <div class="col-lg-6 col-md-12 mb-3">
+            <button class="button button-loan btn-lg w-100" data-toggle="modal" data-target="#loanModal">Loan a Chromebook</button>
+        </div>
+        <div class="col-lg-6 col-md-12 mb-3">
+            <button class="button button-return btn-lg w-100" data-toggle="modal" data-target="#returnModal">Return a Chromebook</button>
+        </div>
+    </div>          
+
+    <!-- Loan Chromebook Modal -->
+    <div class="modal fade" id="loanModal" tabindex="-1" role="dialog" aria-labelledby="loanModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loanModalLabel">Loan a Chromebook</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ url_for('loan_chromebook') }}" method="post">
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label for="loan_username">Username:</label>
+                            <input type="text" class="form-control" id="loan_username" name="username" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="chromebook_id">Chromebook:</label>
+                            <select class="form-control" id="chromebook_id" name="chromebook_id" required>
+                                {% for chromebook in chromebooks %}
+                                    {% if not chromebook.is_loaned %}
+                                        <option value="{{ chromebook.id }}">{{ chromebook.identifier }}</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Loan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Return Chromebook Modal -->
+    <div class="modal fade" id="returnModal" tabindex="-1" role="dialog" aria-labelledby="returnModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="returnModalLabel">Return a Chromebook</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form action="{{ url_for('return_chromebook') }}" method="post">
+                    <div class="modal-body">
+                        <label for="chromebook_id">Select Chromebook to return:</label>
+                        <select class="form-control" id="chromebook_id" name="chromebook_id" required>
+                            {% for chromebook in loaned_chromebooks %}
+                            <option value="{{ chromebook.id }}">Chromebook {{ chromebook.identifier }} - {{ chromebook.user.username }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary">Return</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Button -->
+    <div class="text-center my-4">
+        <button class="btn btn-secondary btn-sm" onclick="showPasswordPrompt()">Admin View</button>
+    </div>
+</div>
+
+<script>
+    function showPasswordPrompt() {
+        const password = prompt("Enter the admin password:");
+        if (password !== null) {
+            // Make a POST request to /admin with the entered password
+            var form = document.createElement("form");
+            form.method = "POST";
+            form.action = "{{ url_for('admin') }}";
+
+            var passwordInput = document.createElement("input");
+            passwordInput.type = "hidden";
+            passwordInput.name = "password";
+            passwordInput.value = password;
+
+            form.appendChild(passwordInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
+</script>
+{% endblock %}
