@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\Danny\Documents\Projects\chromebook_loan_system\venv
+set VIRTUAL_ENV=C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv
 
 if not defined PROMPT set PROMPT=$P$G
 

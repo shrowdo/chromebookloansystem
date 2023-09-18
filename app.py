@@ -1,7 +1,11 @@
-from flask import Flask, render_template, request, redirect, url_for, abort, flash
+from flask import Flask
+from dotenv import load_dotenv
+load_dotenv()
+from flask import render_template, request, redirect, url_for, abort, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime, timedelta
+from sqlalchemy.dialects.postgresql import JSON
 from urllib.parse import quote
 from nameparser import HumanName
 import os
@@ -10,24 +14,20 @@ import psycopg2
 import re
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY')
 
-# Fetch the DATABASE_URL from environment variable
+if os.environ.get('FLASK_ENV') == 'development':
+    app.config.from_object('config.DevelopmentConfig')
+else:
+    app.config.from_object('config.ProductionConfig')
+
 database_url = os.getenv('DATABASE_URL')
-
-# Fetch the ADMIN_PASSWORD from environment variable
 admin_password = os.environ.get('ADMIN_PASSWORD')
 
-# Fix for Heroku's "postgres://" prefix
-if database_url.startswith("postgres://"):
+if database_url and database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-
-# ... rest of your code ...
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -37,18 +37,19 @@ class User(db.Model):
 class Chromebook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     identifier = db.Column(db.String(80), unique=True, nullable=False)
-    serial_number = db.Column(db.String(80), unique=True, nullable=False)  # New field
-    is_loaned = db.Column(db.Boolean, default=False, nullable=False)
+    serial_number = db.Column(db.String(80), unique=True, nullable=False)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
     loaned_at = db.Column(db.DateTime, nullable=True)
+    status = db.Column(db.String(80), default='Available', nullable=False)
+    history = db.Column(JSON, nullable=True, default=[])
 
 @app.route('/')
 def home():
-    chromebooks = Chromebook.query.filter_by(is_loaned=False).all()
-    chromebooks.sort(key=lambda x: int(x.identifier)) # Sorting in Python
+    chromebooks = Chromebook.query.filter_by(status='Available').all()
+    chromebooks.sort(key=lambda x: int(x.identifier))
 
-    loaned_chromebooks = Chromebook.query.filter_by(is_loaned=True).all()
-    loaned_chromebooks.sort(key=lambda x: int(x.identifier)) # Sorting in Python
+    loaned_chromebooks = Chromebook.query.filter(Chromebook.status=='Loaned').all()
+    loaned_chromebooks.sort(key=lambda x: int(x.identifier))
 
     return render_template('home.html', chromebooks=chromebooks, loaned_chromebooks=loaned_chromebooks)
 
@@ -64,13 +65,25 @@ def loan_chromebook():
         db.session.commit()
 
     chromebook = Chromebook.query.get(chromebook_id)
-    if chromebook.is_loaned:
+    if chromebook.status == 'Loaned':
         flash(('Chromebook is already loaned.', 'danger'))
         return redirect(url_for('home'))
+    elif chromebook.status == 'Missing':
+        flash(('Chromebook is marked as missing and cannot be loaned.', 'danger'))
+        return redirect(url_for('home'))
 
-    chromebook.is_loaned = True
+    chromebook.status = 'Loaned'
     chromebook.user_id = user.id
     chromebook.loaned_at = datetime.utcnow()
+    
+    # Update the history
+    if chromebook.history:
+        chromebook.history.append(user.username)
+        # Ensure only the last 3 users are retained
+        chromebook.history = chromebook.history[-3:]
+    else:
+        chromebook.history = [user.username]
+    
     db.session.commit()
 
     flash(f'Device {chromebook.identifier} Loaned. Thank You. Please return by 4pm', 'success')
@@ -90,10 +103,21 @@ def return_chromebook():
     chromebook_id = request.form.get('chromebook_id')
 
     chromebook = Chromebook.query.get(chromebook_id)
-    if chromebook and chromebook.is_loaned:
-        chromebook.is_loaned = False
+    user = None
+
+    if chromebook and chromebook.status == 'Loaned':
+        user = User.query.get(chromebook.user_id)
+        chromebook.status = 'Available'
         chromebook.user_id = None
         chromebook.loaned_at = None
+        
+        if chromebook.history:
+            chromebook.history.append(user.username)
+            # Ensure only the last 3 users are retained
+            chromebook.history = chromebook.history[-3:]
+        else:
+            chromebook.history = [user.username]
+        
         db.session.commit()
 
         flash('Thank you!', 'success')
@@ -104,7 +128,7 @@ def return_chromebook():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    filter_by = request.args.get('filter', 'all')  # Get the filter status from the query parameters
+    filter_by = request.args.get('filter', 'all')
 
     if request.method == 'POST':
         password = request.form.get('password')
@@ -117,33 +141,30 @@ def admin():
 
     chromebooks = Chromebook.query
     if filter_by == 'all':
-        chromebooks = chromebooks.all()  # Fetch all chromebooks
+        chromebooks = chromebooks.all()
     elif filter_by == 'available':
-        chromebooks = chromebooks.filter_by(is_loaned=False).all()  # Filter by available chromebooks
+        chromebooks = chromebooks.filter_by(status='Available').all()
     elif filter_by == 'loaned':
-        chromebooks = chromebooks.filter_by(is_loaned=True).all()  # Filter by loaned chromebooks
+        chromebooks = chromebooks.filter_by(status='Loaned').all()
     elif filter_by == 'overdue':
-        chromebooks = chromebooks.filter(Chromebook.is_loaned == True, now - Chromebook.loaned_at > timedelta(hours=24)).all()  # Filter by overdue chromebooks
+        chromebooks = chromebooks.filter(Chromebook.status == 'Loaned', now - Chromebook.loaned_at > timedelta(hours=24)).all()
+    elif filter_by == 'missing':
+        chromebooks = chromebooks.filter_by(status='Missing').all()
 
-    # Sort by identifier in numeric order, regardless of filter
     chromebooks = sorted(chromebooks, key=lambda cb: int(cb.identifier))  
-    
-    # Create list of email addresses of users with overdue Chromebooks
-    overdue_chromebook_emails = [chromebook.user.username + ('' if '@tiffingirls.org' in chromebook.user.username else '@tiffingirls.org') for chromebook in chromebooks if chromebook.is_loaned and (now - chromebook.loaned_at > timedelta(hours=24))]
 
-    # Create list of names of users with overdue Chromebooks
-    overdue_chromebook_usernames = [re.sub(r'^\d{2}|@tiffingirls.org$', '', chromebook.user.username) for chromebook in chromebooks if chromebook.is_loaned and (now - chromebook.loaned_at > timedelta(hours=24))]
+    overdue_chromebook_emails = [chromebook.user.username + ('' if '@tiffingirls.org' in chromebook.user.username else '@tiffingirls.org') for chromebook in chromebooks if chromebook.status == 'Loaned' and (now - chromebook.loaned_at > timedelta(hours=24))]
+
+    overdue_chromebook_usernames = [re.sub(r'^\d{2}|@tiffingirls.org$', '', chromebook.user.username) for chromebook in chromebooks if chromebook.status == 'Loaned' and (now - chromebook.loaned_at > timedelta(hours=24))]
     overdue_chromebook_names = [f'{username[0].upper()} {username[1:].capitalize()}' for username in overdue_chromebook_usernames]
     
-    # Create a mailto link for reception
     reception_email = "reception@tiffingirls.org"
     reception_subject = quote("Overdue Chromebook Report")
-    reception_body = quote(f"Dear Reception,\n\nThe following users have Chromebooks that are overdue for return:\n\n" + "\n".join(overdue_chromebook_names) + "\n\nPlease follow up with them.\n\nThank you.")
+    reception_body = quote(f"Dear Reception,\\n\\nThe following users have Chromebooks that are overdue for return:\\n\\n" + "\\n".join(overdue_chromebook_names) + "\\n\\nPlease follow up with them.\\n\\nThank you.")
     reception_mailto_link = f'mailto:{reception_email}?subject={reception_subject}&body={reception_body}'
 
-    # Create a mailto link
     subject = quote("Overdue Chromebook Reminder")
-    body = quote("Dear User,\n\nOur records indicate that you have a Chromebook that is overdue for return. Please return it as soon as possible.\n\nThank you.")
+    body = quote("Dear User,\\n\\nOur records indicate that you have a Chromebook that is overdue for return. Please return it as soon as possible.\\n\\nThank you.")
     mailto_link = f'mailto:{";".join(overdue_chromebook_emails)}?subject={subject}&body={body}'
     
     return render_template('admin.html', chromebooks=chromebooks, users=users, mailto_link=mailto_link, reception_mailto_link=reception_mailto_link)
@@ -151,10 +172,10 @@ def admin():
 @app.route('/add_chromebook', methods=['POST'])
 def add_chromebook():
     identifier = request.form.get('identifier')
-    serial_number = request.form.get('serial_number')  # New field
+    serial_number = request.form.get('serial_number')
     
     if identifier and serial_number:
-        chromebook = Chromebook(identifier=identifier, serial_number=serial_number)  # New field
+        chromebook = Chromebook(identifier=identifier, serial_number=serial_number)
         db.session.add(chromebook)
         db.session.commit()
     
@@ -162,14 +183,11 @@ def add_chromebook():
 
 @app.route('/edit_chromebook/<int:chromebook_id>', methods=['POST'])
 def edit_chromebook(chromebook_id):
-    # Lookup the Chromebook by ID
     chromebook = Chromebook.query.get(chromebook_id)
     if not chromebook:
         abort(404)
-    # Update the Chromebook with the new values from the form
     chromebook.identifier = request.form.get('identifier')
     chromebook.serial_number = request.form.get('serial_number')
-    # Save the changes
     db.session.commit()
     return redirect(url_for('admin'))
 
@@ -178,6 +196,31 @@ def delete_chromebook(chromebook_id):
     chromebook = Chromebook.query.get_or_404(chromebook_id)
     db.session.delete(chromebook)
     db.session.commit()
+    return redirect(url_for('admin'))
+
+@app.route('/mark_missing/<int:chromebook_id>', methods=['POST'])
+def mark_missing(chromebook_id):
+    chromebook = Chromebook.query.get(chromebook_id)
+    if chromebook:
+        if chromebook.status == 'Loaned':
+            flash(f'Chromebook {chromebook.identifier} is currently loaned and cannot be marked as missing.', 'danger')
+        else:
+            chromebook.status = 'Missing'
+            db.session.commit()
+            flash(f'Chromebook {chromebook.identifier} marked as missing.', 'warning')
+    else:
+        flash('Chromebook not found.', 'danger')
+    return redirect(url_for('admin'))
+
+@app.route('/mark_found/<int:chromebook_id>', methods=['POST'])
+def mark_found(chromebook_id):
+    chromebook = Chromebook.query.get(chromebook_id)
+    if chromebook:
+        chromebook.status = 'Available'
+        db.session.commit()
+        flash(f'Chromebook {chromebook.identifier} marked as found.', 'success')
+    else:
+        flash('Chromebook not found.', 'danger')
     return redirect(url_for('admin'))
 
 if __name__ == '__main__':
