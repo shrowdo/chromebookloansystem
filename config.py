@@ -1,4 +1,3 @@
-
 import os
 
 class Config:
@@ -9,9 +8,10 @@ class Config:
 class DevelopmentConfig(Config):
     # Development-specific configurations
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///development.db'
+    # Replace with your local PostgreSQL settings
+    SQLALCHEMY_DATABASE_URI = 'postgresql://your_username:your_password@localhost:5432/your_database_name'
 
 class ProductionConfig(Config):
     # Production-specific configurations
     DEBUG = False
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL', 'postgresql://fallback_user:fallback_password@localhost:5432/fallback_database')
