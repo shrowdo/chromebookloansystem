@@ -202,11 +202,11 @@ def admin():
 
     reception_email = "reception@tiffingirls.org"
     reception_subject = quote("Overdue Chromebook Report")
-    reception_body = quote(f"Dear Reception,\\n\\nThe following users have Chromebooks that are overdue for return:\\n\\n" + "\\n".join(overdue_chromebook_names) + "\\n\\nPlease follow up with them.\\n\\nThank you.")
+    reception_body = quote(f"Dear Reception,\n\nThe following users have Chromebooks that are overdue for return:\n\n" + "\n".join(overdue_chromebook_names) + "\n\nPlease follow up with them.\n\nThank you.")
     reception_mailto_link = f'mailto:{reception_email}?subject={reception_subject}&body={reception_body}'
 
     subject = quote("Overdue Chromebook Reminder")
-    body = quote("Dear User,\\n\\nOur records indicate that you have a Chromebook that is overdue for return. Please return it as soon as possible.\\n\\nThank you.")
+    body = quote("Dear User,\n\nOur records indicate that you have a Chromebook that is overdue for return. Please return it as soon as possible.\n\nThank you.")
     mailto_link = f'mailto:{";".join(overdue_chromebook_emails)}?subject={subject}&body={body}'
     
     return render_template('admin.html', chromebooks=chromebooks, users=users, mailto_link=mailto_link, reception_mailto_link=reception_mailto_link)
