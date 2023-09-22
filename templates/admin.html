@@ -120,11 +120,26 @@
                                                 </textarea>                                                                                                                                                    
                                             </div>
                                         </div>
+                                        
                                         <div class="modal-footer">
                                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                                             <button type="submit" class="btn btn-primary">Save Changes</button>
                                         </div>
                                     </form>
+
+                                    <!-- Mark as Missing or Found Button -->
+                                    <div class="modal-footer">
+                                        {% if chromebook.status == 'Available' %}
+                                        <form action="{{ url_for('mark_missing', chromebook_id=chromebook.id) }}" method="post" style="display:inline">
+                                            <button type="submit" class="btn btn-warning" title="Mark this Chromebook as missing">Mark as Missing</button>
+                                        </form>
+                                        {% elif chromebook.status == 'Missing' %}
+                                        <form action="{{ url_for('mark_found', chromebook_id=chromebook.id) }}" method="post" style="display:inline">
+                                            <button type="submit" class="btn btn-success" title="Mark this Chromebook as found">Mark as Found</button>
+                                        </form>
+                                        {% endif %}
+                                    </div>
+
                                     <form action="{{ url_for('delete_chromebook', chromebook_id=chromebook.id) }}" method="post" onsubmit="return confirm('Are you sure you want to delete this Chromebook?');" style="display:inline;">
                                         <div class="modal-footer">
                                             <button type="submit" class="btn btn-danger">Delete</button>
@@ -133,16 +148,6 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Mark as Missing or Found Button -->
-                        {% if chromebook.status == 'Available' %}
-                        <form action="{{ url_for('mark_missing', chromebook_id=chromebook.id) }}" method="post" style="display:inline">
-                            <button type="submit" class="btn btn-warning" title="Mark this Chromebook as missing">Mark as Missing</button>
-                        </form>
-                        {% elif chromebook.status == 'Missing' %}
-                        <form action="{{ url_for('mark_found', chromebook_id=chromebook.id) }}" method="post" style="display:inline">
-                            <button type="submit" class="btn btn-success" title="Mark this Chromebook as found">Mark as Found</button>
-                        </form>
-                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
