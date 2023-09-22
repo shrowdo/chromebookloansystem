@@ -1,0 +1,73 @@
+Exception on / [GET]
+Traceback (most recent call last):
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1963, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 920, in do_execute
+    cursor.execute(statement, parameters)
+psycopg2.errors.UndefinedColumn: column chromebook.email_sent does not exist
+LINE 1: ...oaned_at, chromebook.status AS chromebook_status, chromebook...
+                                                             ^
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\flask\app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\flask\app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\app.py", line 77, in home
+    chromebooks = Chromebook.query.filter_by(status='Available').all()
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2688, in all
+    return self._iter().all()  # type: ignore
+           ^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\orm\query.py", line 2842, in _iter
+    result: Union[ScalarResult[_T], Result[_T]] = self.session.execute(
+                                                  ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2231, in execute
+    return self._execute_internal(
+           ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 2126, in _execute_internal
+    result: Result[Any] = compile_state_cls.orm_execute_statement(
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\orm\context.py", line 292, in orm_execute_statement
+    result = conn.execute(
+             ^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1413, in execute
+    return meth(
+           ^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\sql\elements.py", line 483, in _execute_on_connection
+    return connection._execute_clauseelement(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1637, in _execute_clauseelement
+    ret = self._execute_context(
+          ^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1841, in _execute_context
+    return self._exec_single_context(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1982, in _exec_single_context
+    self._handle_dbapi_exception(
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 2339, in _handle_dbapi_exception
+    raise sqlalchemy_exception.with_traceback(exc_info[2]) from e
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\engine\base.py", line 1963, in _exec_single_context
+    self.dialect.do_execute(
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\sqlalchemy\engine\default.py", line 920, in do_execute
+    cursor.execute(statement, parameters)
+sqlalchemy.exc.ProgrammingError: (psycopg2.errors.UndefinedColumn) column chromebook.email_sent does not exist
+LINE 1: ...oaned_at, chromebook.status AS chromebook_status, chromebook...
+                                                             ^
+
+[SQL: SELECT chromebook.id AS chromebook_id, chromebook.identifier AS chromebook_identifier, chromebook.serial_number AS chromebook_serial_number, chromebook.user_id AS chromebook_user_id, chromebook.loaned_at AS chromebook_loaned_at, chromebook.status AS chromebook_status, chromebook.email_sent AS chromebook_email_sent 
+FROM chromebook 
+WHERE chromebook.status = %(status_1)s]
+[parameters: {'status_1': 'Available'}]
+(Background on this error at: https://sqlalche.me/e/20/f405)
