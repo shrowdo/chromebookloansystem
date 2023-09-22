@@ -1,0 +1,41 @@
+Exception on /admin [POST]
+Traceback (most recent call last):
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\flask\app.py", line 2190, in wsgi_app
+    response = self.full_dispatch_request()
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\flask\app.py", line 1486, in full_dispatch_request
+    rv = self.handle_user_exception(e)
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\flask\app.py", line 1484, in full_dispatch_request
+    rv = self.dispatch_request()
+         ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\flask\app.py", line 1469, in dispatch_request
+    return self.ensure_sync(self.view_functions[rule.endpoint])(**view_args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\app.py", line 189, in admin
+    return render_template('admin.html', chromebooks=chromebooks, users=users, mailto_link=mailto_link, reception_mailto_link=reception_mailto_link)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\flask\templating.py", line 151, in render_template
+    return _render(app, template, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\flask\templating.py", line 132, in _render
+    rv = template.render(context)
+         ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\jinja2\environment.py", line 1301, in render
+    self.environment.handle_exception()
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\jinja2\environment.py", line 936, in handle_exception
+    raise rewrite_traceback_stack(source=source)
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\templates\admin.html", line 1, in top-level template code
+    {% extends 'base.html' %}
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\templates\base.html", line 35, in top-level template code
+    {% block content %}
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\templates\admin.html", line 121, in block 'content'
+    {{ history_entry.action }} by {{ history_entry.username }} on {{ history_entry.timestamp|datetimefilter }}
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\app.py", line 120, in datetimefilter
+    value = utc.localize(value)
+            ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Danny\Documents\Projects\Applications\chromebookloansystem\venv\Lib\site-packages\pytz\__init__.py", line 244, in localize
+    if dt.tzinfo is not None:
+       ^^^^^^^^^
+jinja2.exceptions.UndefinedError: 'app.ChromebookHistory object' has no attribute 'timestamp'

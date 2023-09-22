@@ -19,8 +19,19 @@ from nameparser import HumanName
 import pytz
 import psycopg2
 import re
+import logging
+from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
+
+app = Flask(__name__)
+
+# Logging configuration
+log_file = 'chromebook_loan_system.log'
+handler = RotatingFileHandler(log_file, maxBytes=10000, backupCount=1)
+handler.setLevel(logging.INFO)
+app.logger.addHandler(handler)
+app.logger.setLevel(logging.INFO)
 
 if os.environ.get('FLASK_ENV') == 'development':
     app.config.from_object('config.DevelopmentConfig')
@@ -51,7 +62,14 @@ class Chromebook(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
     loaned_at = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(80), default='Available', nullable=False)
-    history = db.Column(JSON, nullable=True, default=default_history)
+    history = db.relationship('ChromebookHistory', backref='chromebook', lazy=True, cascade="all, delete")
+
+class ChromebookHistory(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    chromebook_id = db.Column(db.Integer, db.ForeignKey('chromebook.id', ondelete='CASCADE'), nullable=False)
+    username = db.Column(db.String(80), nullable=False)
+    action_date = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    action = db.Column(db.String(80), nullable=False)  # Can be 'Loaned' or 'Returned'
 
 @app.route('/')
 def home():
@@ -86,13 +104,14 @@ def loan_chromebook():
     chromebook.user_id = user.id
     chromebook.loaned_at = datetime.utcnow()
     
-    # Update the history
-    if chromebook.history:
-        chromebook.history.append(user.username)
-        # Ensure only the last 3 users are retained
-        chromebook.history = chromebook.history[-3:]
-    else:
-        chromebook.history = [user.username]
+    # Add an entry to ChromebookHistory for loaning
+    history_entry = ChromebookHistory(chromebook_id=chromebook.id, username=user.username, action='Loaned')
+    db.session.add(history_entry)
+    
+    # Check the number of history entries for the Chromebook
+    if len(chromebook.history) > 6:
+        oldest_entry = ChromebookHistory.query.filter_by(chromebook_id=chromebook.id).order_by(ChromebookHistory.action_date).first()
+        db.session.delete(oldest_entry)
     
     db.session.commit()
 
@@ -111,22 +130,22 @@ app.jinja_env.filters['datetimefilter'] = datetimefilter
 @app.route('/return', methods=['POST'])
 def return_chromebook():
     chromebook_id = request.form.get('chromebook_id')
-
     chromebook = Chromebook.query.get(chromebook_id)
-    user = None
 
     if chromebook and chromebook.status == 'Loaned':
         user = User.query.get(chromebook.user_id)
         chromebook.status = 'Available'
         chromebook.user_id = None
         chromebook.loaned_at = None
-        
-        if chromebook.history:
-            chromebook.history.append(user.username)
-            # Ensure only the last 3 users are retained
-            chromebook.history = chromebook.history[-3:]
-        else:
-            chromebook.history = [user.username]
+
+        # Add an entry to ChromebookHistory for returning
+        history_entry = ChromebookHistory(chromebook_id=chromebook.id, username=user.username, action='Returned')
+        db.session.add(history_entry)
+
+        # Check the number of history entries for the Chromebook
+        if len(chromebook.history) > 6:
+            oldest_entry = ChromebookHistory.query.filter_by(chromebook_id=chromebook.id).order_by(ChromebookHistory.action_date).first()
+            db.session.delete(oldest_entry)
         
         db.session.commit()
 
@@ -204,6 +223,7 @@ def edit_chromebook(chromebook_id):
 @app.route('/delete_chromebook/<int:chromebook_id>', methods=['POST'])
 def delete_chromebook(chromebook_id):
     chromebook = Chromebook.query.get_or_404(chromebook_id)
+    
     db.session.delete(chromebook)
     db.session.commit()
     return redirect(url_for('admin'))
