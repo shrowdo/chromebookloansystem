@@ -63,7 +63,8 @@ class Chromebook(db.Model):
     loaned_at = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(80), default='Available', nullable=False)
     history = db.relationship('ChromebookHistory', backref='chromebook', lazy=True, cascade="all, delete")
-
+    email_sent = db.Column(db.Boolean, default=False, nullable=False)
+    
 class ChromebookHistory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     chromebook_id = db.Column(db.Integer, db.ForeignKey('chromebook.id', ondelete='CASCADE'), nullable=False)
@@ -103,6 +104,9 @@ def loan_chromebook():
     chromebook.status = 'Loaned'
     chromebook.user_id = user.id
     chromebook.loaned_at = datetime.utcnow()
+
+    # Reset the email_sent flag for the Chromebook
+    chromebook.email_sent = False
     
     # Add an entry to ChromebookHistory for loaning
     history_entry = ChromebookHistory(chromebook_id=chromebook.id, username=user.username, action='Loaned')
@@ -137,6 +141,9 @@ def return_chromebook():
         chromebook.status = 'Available'
         chromebook.user_id = None
         chromebook.loaned_at = None
+
+        # Reset the email_sent flag for the Chromebook
+        chromebook.email_sent = False
 
         # Add an entry to ChromebookHistory for returning
         history_entry = ChromebookHistory(chromebook_id=chromebook.id, username=user.username, action='Returned')
@@ -182,11 +189,17 @@ def admin():
 
     chromebooks = sorted(chromebooks, key=lambda cb: int(cb.identifier))  
 
-    overdue_chromebook_emails = [chromebook.user.username + ('' if '@tiffingirls.org' in chromebook.user.username else '@tiffingirls.org') for chromebook in chromebooks if chromebook.status == 'Loaned' and (now - chromebook.loaned_at > timedelta(hours=24))]
+    overdue_chromebook_emails = [chromebook.user.username + ('' if '@tiffingirls.org' in chromebook.user.username else '@tiffingirls.org') for chromebook in chromebooks if chromebook.status == 'Loaned' and chromebook.email_sent == False and (now - chromebook.loaned_at > timedelta(hours=24))]
+
+    # Mark these chromebooks as emailed
+    for chromebook in chromebooks:
+        if chromebook.status == 'Loaned' and chromebook.email_sent == False and (now - chromebook.loaned_at > timedelta(hours=24)):
+            chromebook.email_sent = True
+    db.session.commit()
 
     overdue_chromebook_usernames = [re.sub(r'^\d{2}|@tiffingirls.org$', '', chromebook.user.username) for chromebook in chromebooks if chromebook.status == 'Loaned' and (now - chromebook.loaned_at > timedelta(hours=24))]
     overdue_chromebook_names = [f'{username[0].upper()} {username[1:].capitalize()}' for username in overdue_chromebook_usernames]
-    
+
     reception_email = "reception@tiffingirls.org"
     reception_subject = quote("Overdue Chromebook Report")
     reception_body = quote(f"Dear Reception,\\n\\nThe following users have Chromebooks that are overdue for return:\\n\\n" + "\\n".join(overdue_chromebook_names) + "\\n\\nPlease follow up with them.\\n\\nThank you.")
