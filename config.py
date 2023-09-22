@@ -9,7 +9,7 @@ class DevelopmentConfig(Config):
     # Development-specific configurations
     DEBUG = True
     # Replace with your local PostgreSQL settings
-    SQLALCHEMY_DATABASE_URI = 'postgresql://your_username:your_password@localhost:5432/your_database_name'
+    SQLALCHEMY_DATABASE_URI = 'postgresql://postgres:1234@localhost:5432/chromebookloansystem_dev'
 
 class ProductionConfig(Config):
     # Production-specific configurations

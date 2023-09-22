@@ -1,6 +1,14 @@
 from flask import Flask
 from dotenv import load_dotenv
+
 load_dotenv()
+
+# Import the os module
+import os
+
+# Retrieve the admin password from environment variables
+admin_password = os.environ.get('ADMIN_PASSWORD')
+
 from flask import render_template, request, redirect, url_for, abort, flash
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -8,7 +16,6 @@ from datetime import datetime, timedelta
 from sqlalchemy.dialects.postgresql import JSON
 from urllib.parse import quote
 from nameparser import HumanName
-import os
 import pytz
 import psycopg2
 import re
@@ -20,13 +27,11 @@ if os.environ.get('FLASK_ENV') == 'development':
 else:
     app.config.from_object('config.ProductionConfig')
 
-database_url = os.getenv('DATABASE_URL')
-admin_password = os.environ.get('ADMIN_PASSWORD')
+database_url = app.config['SQLALCHEMY_DATABASE_URI']
 
-if database_url and database_url.startswith("postgres://"):
+if database_url.startswith("postgres://"):
     database_url = database_url.replace("postgres://", "postgresql://", 1)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -36,6 +41,9 @@ class User(db.Model):
     username = db.Column(db.String(80), unique=True, nullable=False)
     chromebooks = db.relationship('Chromebook', backref='user', lazy=True)
 
+def default_history():
+    return []
+
 class Chromebook(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     identifier = db.Column(db.String(80), unique=True, nullable=False)
@@ -43,7 +51,7 @@ class Chromebook(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='SET NULL'), nullable=True)
     loaned_at = db.Column(db.DateTime, nullable=True)
     status = db.Column(db.String(80), default='Available', nullable=False)
-    history = db.Column(JSON, nullable=True, default=[])
+    history = db.Column(JSON, nullable=True, default=default_history)
 
 @app.route('/')
 def home():
