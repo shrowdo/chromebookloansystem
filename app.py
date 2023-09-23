@@ -16,22 +16,26 @@ from datetime import datetime, timedelta
 from sqlalchemy.dialects.postgresql import JSON
 from urllib.parse import quote
 from nameparser import HumanName
+from apscheduler.schedulers.background import BackgroundScheduler
 import pytz
 import psycopg2
 import re
 import logging
-from logging.handlers import RotatingFileHandler
+import sys
+from flask_mail import Mail, Message
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s - %(message)s')
 
 app = Flask(__name__)
 
-app = Flask(__name__)
-
-# Logging configuration
-log_file = 'chromebook_loan_system.log'
-handler = RotatingFileHandler(log_file, maxBytes=10000, backupCount=1)
-handler.setLevel(logging.INFO)
-app.logger.addHandler(handler)
-app.logger.setLevel(logging.INFO)
+mail = Mail(app)
+app.config['MAIL_SERVER'] = 'smtp.office365.com'
+app.config['MAIL_PORT'] = 587
+app.config['MAIL_USERNAME'] = 'YOUR_EMAIL@outlook.com'  # Replace with your email
+app.config['MAIL_PASSWORD'] = 'YOUR_PASSWORD'           # Replace with your password
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USE_SSL'] = False
+mail.init_app(app)
 
 if os.environ.get('FLASK_ENV') == 'development':
     app.config.from_object('config.DevelopmentConfig')
@@ -265,6 +269,34 @@ def mark_found(chromebook_id):
     else:
         flash('Chromebook not found.', 'danger')
     return redirect(url_for('admin'))
+
+def send_overdue_emails():
+    now = datetime.utcnow()
+    overdue_chromebooks = Chromebook.query.filter(Chromebook.status == 'Loaned', now - Chromebook.loaned_at > timedelta(hours=24), Chromebook.email_sent == False).all()
+    
+    for chromebook in overdue_chromebooks:
+        user = User.query.get(chromebook.user_id)
+        if not user:
+            continue  # Skip if no user is associated with the Chromebook
+        
+        # Send overdue email
+        msg = Message('Overdue Chromebook Reminder', sender='YOUR_EMAIL@outlook.com', recipients=[user.username])
+        msg.body = f'Dear {user.username},\\n\\nYour borrowed Chromebook (ID: {chromebook.identifier}) is now overdue. Please return it as soon as possible.\\n\\nThank you!'
+        mail.send(msg)
+        
+        # Logging the email sending event
+        logging.info(f"Sent overdue reminder email to {user.username} for Chromebook ID: {chromebook.identifier}")
+        
+        # Mark the Chromebook as having an email sent
+        chromebook.email_sent = True
+        db.session.commit()
+
+def start_scheduler():
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(send_overdue_emails, trigger='interval', days=1, start_date='2023-09-24 08:00:00')  # Adjust the start_date appropriately
+    scheduler.start()
+
+start_scheduler()
 
 if __name__ == '__main__':
     app.run(debug=True)

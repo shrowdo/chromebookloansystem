@@ -75,7 +75,13 @@
             </thead>
             <tbody>
                 {% for chromebook in chromebooks %}
-                <tr {% if chromebook.status == 'Missing' %} style="background-color: #ffe0e0;" {% endif %}>
+                {% if chromebook.status == 'Loaned' and chromebook.email_sent and now - chromebook.loaned_at > timedelta(hours=24) %}
+                <tr class="table-danger">
+                {% elif chromebook.status == 'Missing' %}
+                <tr style="background-color: #ffe0e0;">
+                {% else %}
+                <tr>
+                {% endif %}
                     <td>{{ chromebook.identifier }}</td>
                     <td>{{ chromebook.serial_number }}</td>
                     <td>
