@@ -213,7 +213,7 @@ def admin():
     body = quote("Dear User,\n\nOur records indicate that you have a Chromebook that is overdue for return. Please return it as soon as possible.\n\nThank you.")
     mailto_link = f'mailto:{";".join(overdue_chromebook_emails)}?subject={subject}&body={body}'
     
-    return render_template('admin.html', chromebooks=chromebooks, users=users, mailto_link=mailto_link, reception_mailto_link=reception_mailto_link)
+    return render_template('admin.html', chromebooks=chromebooks, users=users, mailto_link=mailto_link, reception_mailto_link=reception_mailto_link, now=now)
 
 @app.route('/add_chromebook', methods=['POST'])
 def add_chromebook():
