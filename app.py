@@ -31,8 +31,8 @@ app = Flask(__name__)
 mail = Mail(app)
 app.config['MAIL_SERVER'] = 'smtp.office365.com'
 app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = 'YOUR_EMAIL@outlook.com'  # Replace with your email
-app.config['MAIL_PASSWORD'] = 'YOUR_PASSWORD'           # Replace with your password
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 mail.init_app(app)
