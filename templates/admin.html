@@ -69,13 +69,14 @@
                     <th>Serial Number</th>
                     <th>Status</th>
                     <th>User</th>
+                    <th>Wanted Level</th>
                     <th>Loaned At</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for chromebook in chromebooks %}
-                {% if chromebook.status == 'Loaned' and chromebook.email_sent and now - chromebook.loaned_at > timedelta(hours=24) %}
+                {% if chromebook.status == 'Loaned' and now - chromebook.loaned_at > timedelta(hours=24) %}
                 <tr class="table-danger">
                 {% elif chromebook.status == 'Missing' %}
                 <tr style="background-color: #ffe0e0;">
@@ -96,6 +97,11 @@
                         {% endif %}
                     </td>
                     <td>{{ chromebook.user.username if chromebook.user else '' }}</td>
+                    <td>
+                        {% if chromebook.status == 'Loaned' and now - chromebook.loaned_at > timedelta(hours=24) %}
+                        <i class="fa-regular fa-star" title="Overdue"></i>
+                        {% endif %}
+                    </td>                    
                     <td>{{ chromebook.loaned_at|datetimefilter if chromebook.loaned_at else '' }}</td>
                     <td>
                         <!-- Trigger the modal with a button -->

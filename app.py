@@ -195,12 +195,6 @@ def admin():
 
     overdue_chromebook_emails = [chromebook.user.username + ('' if '@tiffingirls.org' in chromebook.user.username else '@tiffingirls.org') for chromebook in chromebooks if chromebook.status == 'Loaned' and chromebook.email_sent == False and (now - chromebook.loaned_at > timedelta(hours=24))]
 
-    # Mark these chromebooks as emailed
-    for chromebook in chromebooks:
-        if chromebook.status == 'Loaned' and chromebook.email_sent == False and (now - chromebook.loaned_at > timedelta(hours=24)):
-            chromebook.email_sent = True
-    db.session.commit()
-
     overdue_chromebook_usernames = [re.sub(r'^\d{2}|@tiffingirls.org$', '', chromebook.user.username) for chromebook in chromebooks if chromebook.status == 'Loaned' and (now - chromebook.loaned_at > timedelta(hours=24))]
     overdue_chromebook_names = [f'{username[0].upper()} {username[1:].capitalize()}' for username in overdue_chromebook_usernames]
 
