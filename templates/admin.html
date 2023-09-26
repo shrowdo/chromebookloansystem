@@ -9,7 +9,7 @@
     <!-- Button to open modal -->
     <button type="button" class="btn btn-primary mb-4" data-toggle="modal" data-target="#addChromebookModal">Add Chromebook</button>
     <!-- Button to send emails to overdue users -->
-    <a href="{{ mailto_link }}" class="btn btn-secondary mb-4">Send Emails to Overdue Users</a>
+    <a href="{{ url_for('prepare_overdue_emails') }}" class="btn btn-secondary mb-4">Send Emails to Overdue Users</a>
     <!-- Button to send emails to reception for overdue users -->
     <a href="{{ reception_mailto_link }}" class="btn btn-warning mb-4">Send Email to Reception for Overdue Users</a>
     <!-- Modal for adding Chromebooks -->

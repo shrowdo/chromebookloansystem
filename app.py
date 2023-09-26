@@ -202,12 +202,32 @@ def admin():
     reception_subject = quote("Overdue Chromebook Report")
     reception_body = quote(f"Dear Reception,\n\nThe following users have Chromebooks that are overdue for return:\n\n" + "\n".join(overdue_chromebook_names) + "\n\nPlease follow up with them.\n\nThank you.")
     reception_mailto_link = f'mailto:{reception_email}?subject={reception_subject}&body={reception_body}'
+    
+    return render_template('admin.html', chromebooks=chromebooks, users=users, reception_mailto_link=reception_mailto_link, now=now, timedelta=timedelta)
 
+@app.route('/prepare_overdue_emails')
+def prepare_overdue_emails():
+    # Mark the Chromebooks as having an email sent
+    now = datetime.utcnow()
+    overdue_chromebooks = Chromebook.query.filter(
+        Chromebook.status == 'Loaned',
+        now - Chromebook.loaned_at > timedelta(hours=24),
+        Chromebook.email_sent == False
+    ).all()
+
+    for chromebook in overdue_chromebooks:
+        chromebook.email_sent = True
+    db.session.commit()
+
+    # Redirect to the mailto link
+    overdue_chromebook_emails = [
+        chromebook.user.username + ('' if '@tiffingirls.org' in chromebook.user.username else '@tiffingirls.org')
+        for chromebook in overdue_chromebooks
+    ]
     subject = quote("Overdue Chromebook Reminder")
     body = quote("Dear User,\n\nOur records indicate that you have a Chromebook that is overdue for return. Please return it as soon as possible.\n\nThank you.")
     mailto_link = f'mailto:{";".join(overdue_chromebook_emails)}?subject={subject}&body={body}'
-    
-    return render_template('admin.html', chromebooks=chromebooks, users=users, mailto_link=mailto_link, reception_mailto_link=reception_mailto_link, now=now, timedelta=timedelta)
+    return redirect(mailto_link)
 
 @app.route('/add_chromebook', methods=['POST'])
 def add_chromebook():
