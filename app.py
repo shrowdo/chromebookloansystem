@@ -273,13 +273,16 @@ def send_overdue_emails():
         if not user:
             continue  # Skip if no user is associated with the Chromebook
         
+        # Ensure the recipient's email is correctly formatted
+        recipient_email = user.username + ('' if '@tiffingirls.org' in user.username else '@tiffingirls.org')  # <-- CHANGED THIS LINE
+        
         # Send overdue email
-        msg = Message('Overdue Chromebook Reminder', sender='YOUR_EMAIL@outlook.com', recipients=[user.username])
+        msg = Message('Overdue Chromebook Reminder', sender=app.config['MAIL_USERNAME'], recipients=[recipient_email])  # <-- UPDATED THE recipients ARGUMENT
         msg.body = f'Dear {user.username},\\n\\nYour borrowed Chromebook (ID: {chromebook.identifier}) is now overdue. Please return it as soon as possible.\\n\\nThank you!'
         mail.send(msg)
         
         # Logging the email sending event
-        logging.info(f"Sent overdue reminder email to {user.username} for Chromebook ID: {chromebook.identifier}")
+        logging.info(f"Sent overdue reminder email to {recipient_email} for Chromebook ID: {chromebook.identifier}")  # <-- UPDATED TO LOG THE EMAIL ADDRESS
         
         # Mark the Chromebook as having an email sent
         chromebook.email_sent = True
