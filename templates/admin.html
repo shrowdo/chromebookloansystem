@@ -100,13 +100,17 @@
                     <td>
                         {% if chromebook.status == 'Loaned' and now - chromebook.loaned_at > timedelta(hours=24) %}
                         <i class="fa-regular fa-star" title="Overdue"></i>
-                        
+                    
                         {% if chromebook.email_sent %}
                         <i class="fa-regular fa-star" title="Email Sent"></i>
                         {% endif %}
                     
+                        {% if chromebook.email_sent and now - chromebook.loaned_at > timedelta(hours=48) %}
+                        <i class="fa-regular fa-star" title="24 Hours Since Email"></i>
                         {% endif %}
-                    </td>                                        
+                    
+                        {% endif %}
+                    </td>                                                            
                     <td>{{ chromebook.loaned_at|datetimefilter if chromebook.loaned_at else '' }}</td>
                     <td>
                         <!-- Trigger the modal with a button -->

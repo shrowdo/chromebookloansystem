@@ -285,28 +285,44 @@ def mark_found(chromebook_id):
     return redirect(url_for('admin'))
 
 def send_overdue_emails():
-    now = datetime.utcnow()
-    overdue_chromebooks = Chromebook.query.filter(Chromebook.status == 'Loaned', now - Chromebook.loaned_at > timedelta(hours=24), Chromebook.email_sent == False).all()
-    
-    for chromebook in overdue_chromebooks:
-        user = User.query.get(chromebook.user_id)
-        if not user:
-            continue  # Skip if no user is associated with the Chromebook
-        
-        # Ensure the recipient's email is correctly formatted
-        recipient_email = user.username + ('' if '@tiffingirls.org' in user.username else '@tiffingirls.org')  # <-- CHANGED THIS LINE
-        
-        # Send overdue email
-        msg = Message('Overdue Chromebook Reminder', sender=app.config['MAIL_USERNAME'], recipients=[recipient_email])  # <-- UPDATED THE recipients ARGUMENT
-        msg.body = f'Dear {user.username},\\n\\nYour borrowed Chromebook (ID: {chromebook.identifier}) is now overdue. Please return it as soon as possible.\\n\\nThank you!'
-        mail.send(msg)
-        
-        # Logging the email sending event
-        logging.info(f"Sent overdue reminder email to {recipient_email} for Chromebook ID: {chromebook.identifier}")  # <-- UPDATED TO LOG THE EMAIL ADDRESS
-        
-        # Mark the Chromebook as having an email sent
-        chromebook.email_sent = True
-        db.session.commit()
+    with app.app_context():
+        now = datetime.utcnow()
+        try:
+            overdue_chromebooks = Chromebook.query.filter(
+                Chromebook.status == 'Loaned',
+                now - Chromebook.loaned_at > timedelta(hours=24),
+                Chromebook.email_sent == False
+            ).all()
+        except Exception as e:
+            logging.error(f"Error fetching overdue chromebooks: {e}")
+            return
+
+        for chromebook in overdue_chromebooks:
+            user = User.query.get(chromebook.user_id)
+            if not user:
+                logging.warning(f"No user found for Chromebook ID: {chromebook.identifier}. Skipping email.")
+                continue  # Skip if no user is associated with the Chromebook
+
+            # Ensure the recipient's email is correctly formatted
+            recipient_email = user.username + ('' if '@tiffingirls.org' in user.username else '@tiffingirls.org')
+
+            # Send overdue email
+            msg = Message('Overdue Chromebook Reminder', sender=app.config['MAIL_USERNAME'], recipients=[recipient_email])
+            msg.body = f'Dear {user.username},\n\nYour borrowed Chromebook (ID: {chromebook.identifier}) is now overdue. Please return it as soon as possible.\n\nThank you!'
+            
+            try:
+                mail.send(msg)
+                logging.info(f"Sent overdue reminder email to {recipient_email} for Chromebook ID: {chromebook.identifier}")
+            except Exception as e:
+                logging.error(f"Error sending email to {recipient_email}: {e}")
+                continue
+
+            # Mark the Chromebook as having an email sent
+            try:
+                chromebook.email_sent = True
+                db.session.commit()
+            except Exception as e:
+                logging.error(f"Error updating Chromebook ID: {chromebook.identifier} in database: {e}")
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
