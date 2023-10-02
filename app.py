@@ -17,7 +17,7 @@ from sqlalchemy.dialects.postgresql import JSON
 from urllib.parse import quote
 from nameparser import HumanName
 from apscheduler.schedulers.background import BackgroundScheduler
-import pytz import timezone
+from pytz import timezone
 import psycopg2
 import re
 import logging
@@ -128,8 +128,8 @@ def loan_chromebook():
     return redirect(url_for('home'))
 
 def datetimefilter(value, format='%Y-%m-%d %H:%M:%S'):
-    utc = pytz.timezone('UTC')
-    london_tz = pytz.timezone('Europe/London')
+    utc = timezone('UTC')
+    london_tz = timezone('Europe/London')
     value = utc.localize(value)
     return value.astimezone(london_tz).strftime(format)
 
@@ -336,4 +336,4 @@ def start_scheduler():
 start_scheduler()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run
