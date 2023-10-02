@@ -17,7 +17,7 @@ from sqlalchemy.dialects.postgresql import JSON
 from urllib.parse import quote
 from nameparser import HumanName
 from apscheduler.schedulers.background import BackgroundScheduler
-import pytz
+import pytz import timezone
 import psycopg2
 import re
 import logging
@@ -326,7 +326,11 @@ def send_overdue_emails():
 
 def start_scheduler():
     scheduler = BackgroundScheduler()
-    scheduler.add_job(send_overdue_emails, trigger='interval', days=1, start_date='2023-09-24 08:00:00')  # Adjust the start_date appropriately
+    
+    london = timezone('Europe/London')
+    start_time = london.localize(datetime(2023, 9, 24, 8, 0, 0))
+    
+    scheduler.add_job(send_overdue_emails, trigger='interval', days=1, start_date=start_time)
     scheduler.start()
 
 start_scheduler()
