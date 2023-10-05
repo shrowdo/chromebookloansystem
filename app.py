@@ -293,6 +293,7 @@ def send_overdue_emails():
                 now - Chromebook.loaned_at > timedelta(hours=24),
                 Chromebook.email_sent == False
             ).all()
+            logging.info(f"Fetched {len(overdue_chromebooks)} overdue Chromebooks for sending emails.")
         except Exception as e:
             logging.error(f"Error fetching overdue chromebooks: {e}")
             return
@@ -321,6 +322,7 @@ def send_overdue_emails():
             try:
                 chromebook.email_sent = True
                 db.session.commit()
+                logging.info(f"Marked Chromebook ID: {chromebook.identifier} as email_sent=True in the database.")
             except Exception as e:
                 logging.error(f"Error updating Chromebook ID: {chromebook.identifier} in database: {e}")
 
