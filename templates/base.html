@@ -8,6 +8,15 @@
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    
+    <!-- Styles to remove button focus shadow -->
+    <style>
+        .btn:focus, .btn:active:focus, .btn.active:focus {
+            outline: none;
+            box-shadow: none;
+        }
+    </style>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <title>Chromebook Loan System</title>
@@ -37,5 +46,12 @@
         {% block content %}
         {% endblock %}
     </div>
+
+    <!-- Tooltip Initialization -->
+    <script>
+        $(function () {
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    </script>
 </body>
 </html>

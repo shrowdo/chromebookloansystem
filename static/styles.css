@@ -166,8 +166,15 @@ h3 {
     background-color: #f8d7da;
     border-color: #f5c6cb;
     color: #721c24;
-  }
-  
-  .alert-show {
+}
+
+.alert-show {
     display: block;
-  }
+}
+
+.btn:focus, 
+.btn:active:focus, 
+.btn.active:focus {
+    outline: none;
+    box-shadow: none;
+}
