@@ -16,7 +16,6 @@ from datetime import datetime, timedelta
 from sqlalchemy.dialects.postgresql import JSON
 from urllib.parse import quote
 from nameparser import HumanName
-from apscheduler.schedulers.background import BackgroundScheduler
 from pytz import timezone
 import psycopg2
 import re
@@ -298,44 +297,43 @@ def send_overdue_emails():
             logging.error(f"Error fetching overdue chromebooks: {e}")
             return
 
+        # Group overdue Chromebooks by user
+        overdue_by_user = {}
         for chromebook in overdue_chromebooks:
-            user = User.query.get(chromebook.user_id)
+            user_id = chromebook.user_id
+            if user_id not in overdue_by_user:
+                overdue_by_user[user_id] = []
+            overdue_by_user[user_id].append(chromebook)
+
+        for user_id, user_overdue_chromebooks in overdue_by_user.items():
+            user = User.query.get(user_id)
             if not user:
-                logging.warning(f"No user found for Chromebook ID: {chromebook.identifier}. Skipping email.")
-                continue  # Skip if no user is associated with the Chromebook
+                logging.warning(f"No user found for user ID: {user_id}. Skipping email.")
+                continue  # Skip if no user is associated with the Chromebooks
 
             # Ensure the recipient's email is correctly formatted
             recipient_email = user.username + ('' if '@tiffingirls.org' in user.username else '@tiffingirls.org')
 
-            # Send overdue email
+            # Create email content for all of the user's overdue Chromebooks
+            chromebook_identifiers = [cb.identifier for cb in user_overdue_chromebooks]
             msg = Message('Overdue Chromebook Reminder', sender=app.config['MAIL_USERNAME'], recipients=[recipient_email])
-            msg.body = f'Dear {user.username},\n\nYour borrowed Chromebook (ID: {chromebook.identifier}) is now overdue. Please return it as soon as possible.\n\nThank you!'
-            
+            msg.body = f'Dear {user.username},\n\nYour borrowed Chromebooks with IDs: {", ".join(chromebook_identifiers)} are now overdue. Please return them as soon as possible.\n\nThank you!'
+
             try:
                 mail.send(msg)
-                logging.info(f"Sent overdue reminder email to {recipient_email} for Chromebook ID: {chromebook.identifier}")
+                logging.info(f"Sent overdue reminder email to {recipient_email} for Chromebook IDs: {', '.join(chromebook_identifiers)}")
             except Exception as e:
                 logging.error(f"Error sending email to {recipient_email}: {e}")
                 continue
 
-            # Mark the Chromebook as having an email sent
+            # Mark the Chromebooks as having an email sent
             try:
-                chromebook.email_sent = True
+                for cb in user_overdue_chromebooks:
+                    cb.email_sent = True
                 db.session.commit()
-                logging.info(f"Marked Chromebook ID: {chromebook.identifier} as email_sent=True in the database.")
+                logging.info(f"Marked Chromebook IDs: {', '.join(chromebook_identifiers)} as email_sent=True in the database.")
             except Exception as e:
-                logging.error(f"Error updating Chromebook ID: {chromebook.identifier} in database: {e}")
-
-def start_scheduler():
-    scheduler = BackgroundScheduler()
-    
-    london = timezone('Europe/London')
-    start_time = london.localize(datetime(2023, 9, 24, 8, 0, 0))
-    
-    scheduler.add_job(send_overdue_emails, trigger='interval', days=1, start_date=start_time)
-    scheduler.start()
-
-start_scheduler()
+                logging.error(f"Error updating Chromebook IDs in database: {e}")
 
 if __name__ == '__main__':
     app.run
