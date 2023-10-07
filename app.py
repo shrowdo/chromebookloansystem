@@ -206,8 +206,9 @@ def admin():
     loaned_count = Chromebook.query.filter_by(status='Loaned').count()
     missing_count = Chromebook.query.filter_by(status='Missing').count()
     overdue_count = Chromebook.query.filter(Chromebook.status == 'Loaned', now - Chromebook.loaned_at > timedelta(hours=24)).count()
-
-    return render_template('admin.html', chromebooks=chromebooks, users=users, reception_mailto_link=reception_mailto_link, now=now, timedelta=timedelta, available_count=available_count, loaned_count=loaned_count, overdue_count=overdue_count, missing_count=missing_count)
+    total_chromebooks = Chromebook.query.count()
+    
+    return render_template('admin.html', chromebooks=chromebooks, users=users, reception_mailto_link=reception_mailto_link, now=now, timedelta=timedelta, available_count=available_count, loaned_count=loaned_count, overdue_count=overdue_count, missing_count=missing_count, total_chromebooks=total_chromebooks)
 
 @app.route('/prepare_overdue_emails')
 def prepare_overdue_emails():
