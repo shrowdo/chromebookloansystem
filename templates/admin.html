@@ -158,7 +158,7 @@
                     <td>{{ chromebook.serial_number }}</td>
                     <td>
                         {% if chromebook.status == "Available" %}
-                            <span class="badge badge-success"><i class="fas fa-check-circle"></i> {{ chromebook.status }}</span>
+                            <span class="badge badge-success">{{ chromebook.status }}</span>
                         {% elif chromebook.status == "Loaned" %}
                             <span class="badge badge-primary">{{ chromebook.status }}</span>
                         {% elif chromebook.status == "Missing" %}
