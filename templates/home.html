@@ -6,6 +6,17 @@
         <h1 class="title-text">Chromebook Loan System</h1>
     </div>
 
+    <!-- Flash Messages Display -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
     <style>
         .loading-indicator {
             display: none;
@@ -146,5 +157,13 @@
         trySubmit();
         return false; // prevent default form submission
     }
+
+    $(document).ready(function() {
+        $(".alert").each(function() {
+            $(this).fadeTo(4000, 500).slideUp(500, function() {
+                $(this).remove();
+            });
+        });
+    });
 </script>
 {% endblock %}
