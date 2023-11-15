@@ -150,7 +150,6 @@ def return_chromebook():
     else:
         return jsonify({'success': False, 'message': 'Chromebook is not currently loaned.'}), 400
 
-
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
     filter_by = request.args.get('filter', 'all')

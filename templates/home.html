@@ -6,6 +6,9 @@
         <h1 class="title-text">Chromebook Loan System</h1>
     </div>
 
+    <!-- Message Container -->
+    <div id="message-container"></div>
+
     <!-- Flash Messages Display -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -141,13 +144,15 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    window.location.href = "{{ url_for('home') }}"; // Redirect to home route
+                    displayMessage(true, data.message);
+                    setTimeout(() => {
+                        window.location.href = "{{ url_for('home') }}"; // Redirect after delay
+                    }, 4000);
                 } else {
+                    displayMessage(false, data.message);
                     if (attemptCount < maxRetries) {
                         attemptCount++;
                         setTimeout(trySubmit, 2000); // retry
-                    } else {
-                        window.location.href = "{{ url_for('home') }}"; // Redirect to home route
                     }
                 }
             })
@@ -161,6 +166,15 @@
 
         trySubmit();
         return false; // prevent default form submission
+    }
+
+    function displayMessage(success, message) {
+        const alertClass = success ? 'alert-success' : 'alert-danger';
+        const alertHtml = `<div class="alert ${alertClass}">${message}</div>`;
+        document.getElementById('message-container').innerHTML = alertHtml;
+        $(".alert").fadeTo(4000, 500).slideUp(500, function() {
+            $(this).remove();
+        });
     }
 
     $(document).ready(function() {
