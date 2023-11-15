@@ -6,9 +6,6 @@
         <h1 class="title-text">Chromebook Loan System</h1>
     </div>
 
-    <!-- Message Container -->
-    <div id="message-container"></div>
-
     <!-- Flash Messages Display -->
     {% with messages = get_flashed_messages(with_categories=true) %}
       {% if messages %}
@@ -130,6 +127,24 @@
         document.getElementById(id).style.display = 'block';
     }
 
+    function popupAlert(message, isSuccess) {
+        const alertDiv = document.createElement('div');
+        alertDiv.classList.add('alert', isSuccess ? 'alert-success' : 'alert-danger');
+        alertDiv.role = 'alert';
+        alertDiv.style.position = 'fixed';
+        alertDiv.style.top = '10%';
+        alertDiv.style.left = '50%';
+        alertDiv.style.transform = 'translateX(-50%)';
+        alertDiv.style.zIndex = '9999'; // Ensure it's on top
+        alertDiv.textContent = message;
+
+        document.body.appendChild(alertDiv);
+
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 4000); // Adjust time as needed
+    }
+
     function submitFormWithRetry(formId, loadingIndicatorId, maxRetries = 3) {
         const form = document.getElementById(formId);
         let attemptCount = 0;
@@ -144,12 +159,12 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    displayMessage(true, data.message);
+                    popupAlert(data.message, true);
                     setTimeout(() => {
                         window.location.href = "{{ url_for('home') }}"; // Redirect after delay
                     }, 4000);
                 } else {
-                    displayMessage(false, data.message);
+                    popupAlert(data.message, false);
                     if (attemptCount < maxRetries) {
                         attemptCount++;
                         setTimeout(trySubmit, 2000); // retry
@@ -166,15 +181,6 @@
 
         trySubmit();
         return false; // prevent default form submission
-    }
-
-    function displayMessage(success, message) {
-        const alertClass = success ? 'alert-success' : 'alert-danger';
-        const alertHtml = `<div class="alert ${alertClass}">${message}</div>`;
-        document.getElementById('message-container').innerHTML = alertHtml;
-        $(".alert").fadeTo(4000, 500).slideUp(500, function() {
-            $(this).remove();
-        });
     }
 
     $(document).ready(function() {
