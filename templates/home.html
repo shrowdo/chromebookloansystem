@@ -165,10 +165,11 @@
                     $('.modal').on('hidden.bs.modal', function () {
                         // Display the popup alert
                         popupAlert(data.message, true);
+                        // Comment out or remove the next line to stop redirecting to the home page
                         // Redirect after the message is displayed for 4 seconds
-                        setTimeout(() => {
-                            window.location.href = "{{ url_for('home') }}";
-                        }, 4000);
+                        // setTimeout(() => {
+                        //    window.location.href = "{{ url_for('home') }}";
+                        // }, 4000);
                     });
                 } else {
                     popupAlert(data.message, false);
