@@ -141,14 +141,13 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    displayFlashMessage(data.message, 'success');
-                    setTimeout(() => window.location.href = "{{ url_for('home') }}", 2000); // Redirect after displaying message
+                    window.location.href = "{{ url_for('home') }}"; // Redirect to home route
                 } else {
                     if (attemptCount < maxRetries) {
                         attemptCount++;
                         setTimeout(trySubmit, 2000); // retry
                     } else {
-                        displayFlashMessage(data.message, 'danger');
+                        window.location.href = "{{ url_for('home') }}"; // Redirect to home route
                     }
                 }
             })
@@ -162,14 +161,6 @@
 
         trySubmit();
         return false; // prevent default form submission
-    }
-
-    function displayFlashMessage(message, category) {
-        const flashContainer = document.createElement("div");
-        flashContainer.className = `alert alert-${category}`;
-        flashContainer.textContent = message;
-        document.body.prepend(flashContainer);
-        setTimeout(() => flashContainer.remove(), 4000);
     }
 
     $(document).ready(function() {
