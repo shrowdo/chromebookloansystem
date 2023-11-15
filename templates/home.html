@@ -143,7 +143,7 @@
                     attemptCount++;
                     setTimeout(trySubmit, 2000); // retry after 2 seconds
                 } else {
-                    window.location.reload(); // reload page to reflect changes
+                    window.location.href = "{{ url_for('home') }}"; // redirect to home route
                 }
             })
             .catch(() => {
