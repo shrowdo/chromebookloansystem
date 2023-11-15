@@ -22,6 +22,7 @@ import re
 import logging
 import sys
 from flask_mail import Mail, Message
+from flask import jsonify
 
 logging.basicConfig(stream=sys.stdout, level=logging.INFO, format='%(asctime)s - %(message)s')
 
@@ -98,33 +99,24 @@ def loan_chromebook():
 
     chromebook = Chromebook.query.get(chromebook_id)
     if chromebook.status == 'Loaned':
-        flash(('Chromebook is already loaned.', 'danger'))
-        return redirect(url_for('home'))
+        return jsonify({'success': False, 'message': 'Chromebook is already loaned.'}), 400
     elif chromebook.status == 'Missing':
-        flash(('Chromebook is marked as missing and cannot be loaned.', 'danger'))
-        return redirect(url_for('home'))
+        return jsonify({'success': False, 'message': 'Chromebook is marked as missing and cannot be loaned.'}), 400
 
     chromebook.status = 'Loaned'
     chromebook.user_id = user.id
     chromebook.loaned_at = datetime.utcnow()
-
-    # Reset the email_sent flag for the Chromebook
     chromebook.email_sent = False
     
-    # Add an entry to ChromebookHistory for loaning
     history_entry = ChromebookHistory(chromebook_id=chromebook.id, username=user.username, action='Loaned')
     db.session.add(history_entry)
-    
-    # Check the number of history entries for the Chromebook
+
     if len(chromebook.history) > 6:
         oldest_entry = ChromebookHistory.query.filter_by(chromebook_id=chromebook.id).order_by(ChromebookHistory.action_date).first()
         db.session.delete(oldest_entry)
-    
+
     db.session.commit()
-
-    flash(f'Device {chromebook.identifier} Loaned. Thank You. Please return by 4pm', 'success')
-
-    return redirect(url_for('home'))
+    return jsonify({'success': True, 'message': f'Device {chromebook.identifier} Loaned. Thank You. Please return by 4pm'}), 200
 
 def datetimefilter(value, format='%Y-%m-%d %H:%M:%S'):
     utc = timezone('UTC')
@@ -144,26 +136,20 @@ def return_chromebook():
         chromebook.status = 'Available'
         chromebook.user_id = None
         chromebook.loaned_at = None
-
-        # Reset the email_sent flag for the Chromebook
         chromebook.email_sent = False
 
-        # Add an entry to ChromebookHistory for returning
         history_entry = ChromebookHistory(chromebook_id=chromebook.id, username=user.username, action='Returned')
         db.session.add(history_entry)
 
-        # Check the number of history entries for the Chromebook
         if len(chromebook.history) > 6:
             oldest_entry = ChromebookHistory.query.filter_by(chromebook_id=chromebook.id).order_by(ChromebookHistory.action_date).first()
             db.session.delete(oldest_entry)
-        
+
         db.session.commit()
-
-        flash('Thank you!', 'success')
+        return jsonify({'success': True, 'message': 'Thank you!'}), 200
     else:
-        flash(('Chromebook is not currently loaned.', 'danger'))
+        return jsonify({'success': False, 'message': 'Chromebook is not currently loaned.'}), 400
 
-    return redirect(url_for('home'))
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
