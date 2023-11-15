@@ -159,10 +159,17 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    popupAlert(data.message, true);
-                    setTimeout(() => {
-                        window.location.href = "{{ url_for('home') }}"; // Redirect after delay
-                    }, 4000);
+                    // Close the modal first
+                    $('.modal').modal('hide');
+                    // Wait for the modal to close
+                    $('.modal').on('hidden.bs.modal', function () {
+                        // Display the popup alert
+                        popupAlert(data.message, true);
+                        // Redirect after the message is displayed for 4 seconds
+                        setTimeout(() => {
+                            window.location.href = "{{ url_for('home') }}";
+                        }, 4000);
+                    });
                 } else {
                     popupAlert(data.message, false);
                     if (attemptCount < maxRetries) {
