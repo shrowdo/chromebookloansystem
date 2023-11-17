@@ -6,16 +6,18 @@
         <h1 class="title-text">Chromebook Loan System</h1>
     </div>
 
-    <!-- Flash Messages Display -->
-    {% with messages = get_flashed_messages(with_categories=true) %}
-      {% if messages %}
-        {% for category, message in messages %}
-          <div class="alert alert-{{ category }}">
-            {{ message }}
-          </div>
-        {% endfor %}
-      {% endif %}
-    {% endwith %}
+    <!-- Flash Messages Display Above the Buttons -->
+    <div id="flash-message-container" class="mb-3">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
 
     <style>
         .loading-indicator {
