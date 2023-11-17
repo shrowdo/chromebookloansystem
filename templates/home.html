@@ -38,7 +38,7 @@
 
     <!-- Loan Chromebook Modal -->
     <div class="modal fade" id="loanModal" tabindex="-1" aria-labelledby="loanModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="loanModalLabel">Loan a Chromebook</h5>
@@ -46,13 +46,13 @@
                 </div>
                 <form id="loanForm" action="{{ url_for('loan_chromebook') }}" method="post" onsubmit="return submitFormWithRetry('loanForm', 'loan-loading-indicator')">
                     <div class="modal-body">
-                        <div class="form-group">
-                            <label for="loan_username">Username:</label>
+                        <div class="mb-3">
+                            <label for="loan_username" class="form-label">Username:</label>
                             <input type="text" class="form-control" id="loan_username" name="username" placeholder="e.g. 23TCrews" required>
                         </div>
-                        <div class="form-group">
-                            <label for="chromebook_id">Chromebook:</label>
-                            <select class="form-control" id="chromebook_id" name="chromebook_id" required>
+                        <div class="mb-3">
+                            <label for="chromebook_id" class="form-label">Chromebook:</label>
+                            <select class="form-select" id="chromebook_id" name="chromebook_id" required>
                                 {% for chromebook in chromebooks %}
                                     <option value="{{ chromebook.id }}">{{ chromebook.identifier }}</option>
                                 {% endfor %}
@@ -61,7 +61,7 @@
                         <div id="loan-loading-indicator" class="loading-indicator">Loading...</div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="submit" class="btn btn-primary">Loan</button>
                     </div>
                 </form>
@@ -71,7 +71,7 @@
 
     <!-- Return Chromebook Modal -->
     <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="returnModalLabel">Return a Chromebook</h5>
@@ -79,16 +79,18 @@
                 </div>
                 <form id="returnForm" action="{{ url_for('return_chromebook') }}" method="post" onsubmit="return submitFormWithRetry('returnForm', 'return-loading-indicator')">
                     <div class="modal-body">
-                        <label for="chromebook_id">Select Chromebook to return:</label>
-                        <select class="form-control" id="chromebook_id" name="chromebook_id" required>
-                            {% for chromebook in loaned_chromebooks %}
-                            <option value="{{ chromebook.id }}">Chromebook {{ chromebook.identifier }} - {{ chromebook.user.username }}</option>
-                            {% endfor %}
-                        </select>
+                        <div class="mb-3">
+                            <label for="chromebook_id" class="form-label">Select Chromebook to return:</label>
+                            <select class="form-select" id="chromebook_id" name="chromebook_id" required>
+                                {% for chromebook in loaned_chromebooks %}
+                                    <option value="{{ chromebook.id }}">Chromebook {{ chromebook.identifier }} - {{ chromebook.user.username }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <div id="return-loading-indicator" class="loading-indicator">Loading...</div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         <button type="submit" class="btn btn-primary">Return</button>
                     </div>
                 </form>
