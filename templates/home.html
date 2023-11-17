@@ -162,7 +162,6 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Store the message in session storage
                     sessionStorage.setItem('flashMessage', data.message);
                     sessionStorage.setItem('isSuccess', 'true');
 
@@ -174,7 +173,9 @@
                 } else {
                     popupAlert(data.message, false);
                     document.getElementById(loadingIndicatorId).style.display = 'none'; // Hide loading indicator on failure
-                    if (attemptCount < maxRetries) {
+
+                    // Check if we should retry
+                    if (data.message !== 'Chromebook is already loaned.' && data.message !== 'Chromebook is marked as missing and cannot be loaned.' && attemptCount < maxRetries) {
                         attemptCount++;
                         setTimeout(trySubmit, 2000); // retry
                     }
