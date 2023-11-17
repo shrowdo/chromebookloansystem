@@ -137,7 +137,8 @@
         alertDiv.style.top = '10%';
         alertDiv.style.left = '50%';
         alertDiv.style.transform = 'translateX(-50%)';
-        alertDiv.style.zIndex = '9999'; // Ensure it's on top
+        alertDiv.style.maxWidth = '400px'; // Set a max width for the alert
+        alertDiv.style.zIndex = '9999';
         alertDiv.textContent = message;
 
         document.body.appendChild(alertDiv);
@@ -165,14 +166,14 @@
                     sessionStorage.setItem('flashMessage', data.message);
                     sessionStorage.setItem('isSuccess', 'true');
 
-                    // Close the modal first
+                    // Close the modal and redirect
                     $('#' + formId).closest('.modal').modal('hide');
-                    // Wait for the modal to close and then redirect to home page
                     $('#' + formId).closest('.modal').on('hidden.bs.modal', function () {
                         window.location.href = "{{ url_for('home') }}";
                     });
                 } else {
                     popupAlert(data.message, false);
+                    document.getElementById(loadingIndicatorId).style.display = 'none'; // Hide loading indicator on failure
                     if (attemptCount < maxRetries) {
                         attemptCount++;
                         setTimeout(trySubmit, 2000); // retry
@@ -200,6 +201,11 @@
             // Display the message
             var alertType = isSuccess ? 'alert-success' : 'alert-danger';
             $('#flash-message-container').html(`<div class="alert ${alertType}">${message}</div>`);
+
+            // Hide the flash message after 4 seconds
+            setTimeout(function() {
+                $('#flash-message-container').fadeOut('slow');
+            }, 4000);
 
             // Clear the message from session storage
             sessionStorage.removeItem('flashMessage');
