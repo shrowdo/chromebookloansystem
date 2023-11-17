@@ -161,13 +161,14 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Store the message in session storage
+                    sessionStorage.setItem('flashMessage', data.message);
+                    sessionStorage.setItem('isSuccess', 'true');
+
                     // Close the modal first
                     $('#' + formId).closest('.modal').modal('hide');
-                    // Wait for the modal to close
+                    // Wait for the modal to close and then redirect to home page
                     $('#' + formId).closest('.modal').on('hidden.bs.modal', function () {
-                        // Redirect to home and store the message in session storage
-                        sessionStorage.setItem('flashMessage', data.message);
-                        sessionStorage.setItem('isSuccess', 'true');
                         window.location.href = "{{ url_for('home') }}";
                     });
                 } else {
@@ -196,7 +197,10 @@
         const isSuccess = sessionStorage.getItem('isSuccess') === 'true';
 
         if (message) {
-            displayFlashMessage(message, isSuccess);
+            // Display the message
+            var alertType = isSuccess ? 'alert-success' : 'alert-danger';
+            $('#flash-message-container').html(`<div class="alert ${alertType}">${message}</div>`);
+
             // Clear the message from session storage
             sessionStorage.removeItem('flashMessage');
             sessionStorage.removeItem('isSuccess');
