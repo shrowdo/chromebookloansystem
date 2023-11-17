@@ -190,18 +190,6 @@
         return false; // prevent default form submission
     }
 
-    function displayFlashMessage(message, isSuccess) {
-        const alertDiv = document.createElement('div');
-        alertDiv.classList.add('alert', isSuccess ? 'alert-success' : 'alert-danger');
-        alertDiv.role = 'alert';
-        alertDiv.textContent = message;
-        document.body.appendChild(alertDiv);
-        
-        $(alertDiv).fadeTo(4000, 500).slideUp(500, function() {
-            $(this).remove();
-        });
-    }
-
     $(document).ready(function() {
         // Check for a flash message in session storage
         const message = sessionStorage.getItem('flashMessage');
