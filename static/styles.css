@@ -192,3 +192,37 @@ h3 {
     margin: 0 auto;
     box-shadow: 0px 0px 10px rgba(0,0,0,0.1); /* Optional for better visibility */
 }
+
+.btn-loan {
+    background-color: #008CBA; /* Blue */
+    color: white;
+    border-radius: 15px;
+    transition: background-color 0.4s;
+}
+
+.btn-loan:hover {
+    background-color: #007B9A; /* Darker blue */
+}
+
+.btn-return {
+    background-color: #f44336; /* Red */
+    color: white;
+    border-radius: 15px;
+    transition: background-color 0.4s;
+}
+
+.btn-return:hover {
+    background-color: #da190b; /* Darker red */
+}
+
+.btn-loan i, .btn-return i {
+    margin-right: 10px;
+}
+
+/* Responsive button size */
+@media (max-width: 576px) {
+    .btn-loan, .btn-return {
+        font-size: 1.5rem; /* Smaller font size on smaller screens */
+        padding: 15px 30px; /* Adjust padding */
+    }
+}
