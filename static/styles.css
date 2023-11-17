@@ -190,3 +190,23 @@ h3 {
     margin: 0 auto;
     box-shadow: 0px 0px 10px rgba(0,0,0,0.1); /* Optional for better visibility */
 }
+
+.custom-loan-button {
+    background-color: #008CBA; /* Blue */
+    border: none;
+    color: white;
+}
+
+.custom-loan-button:hover {
+    background-color: #007B9A; /* Darker blue */
+}
+
+.custom-return-button {
+    background-color: #f44336; /* Red */
+    border: none;
+    color: white;
+}
+
+.custom-return-button:hover {
+    background-color: #da190b; /* Darker red */
+}
