@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+
+    <!-- Font Awesome -->
     <script src="https://kit.fontawesome.com/ccfef792ed.js" crossorigin="anonymous"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    
+
+    <!-- Custom Styles -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <title>Chromebook Loan System</title>
+
     <!-- Styles to remove button focus shadow -->
     <style>
         .btn:focus, .btn:active:focus, .btn.active:focus {
@@ -16,10 +22,6 @@
             box-shadow: none;
         }
     </style>
-
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
-    <title>Chromebook Loan System</title>
 </head>
 <body>
     <div class="container py-4">
@@ -27,30 +29,38 @@
             {% with messages = get_flashed_messages(with_categories=true) %}
                 {% if messages %}
                     {% for category, message in messages %}
-                        <div class="alert-message alert-{{ category }} alert-show">
+                        <div class="alert alert-{{ category }} fade show" role="alert">
                             {{ message }}
                         </div>
-                        <script>
-                            setTimeout(function() {
-                                var alerts = document.getElementsByClassName("alert-show");
-                                for (var i = 0; i < alerts.length; i++) {
-                                    alerts[i].classList.remove("alert-show");
-                                }
-                            }, 5000); // 5000 milliseconds = 5 seconds
-                        </script>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
         </div>
-
+    
         {% block content %}
         {% endblock %}
     </div>
-
-    <!-- Tooltip Initialization -->
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        $(function () {
-            $('[data-toggle="tooltip"]').tooltip();
+        // Automatic dismissal of alerts
+        document.addEventListener('DOMContentLoaded', (event) => {
+            setTimeout(() => {
+                let alerts = document.querySelectorAll('.alert');
+                alerts.forEach(alert => {
+                    new bootstrap.Alert(alert).close();
+                });
+            }, 5000); // Adjust the time as needed
+        });
+    </script>    
+
+    <!-- Tooltip Initialization (if needed, Bootstrap 5 way) -->
+    <script>
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
     </script>
 </body>

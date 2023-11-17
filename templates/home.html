@@ -29,22 +29,20 @@
 
     <div class="row text-center">
         <div class="col-lg-6 col-md-12 mb-3">
-            <button class="button button-loan btn-lg w-100" data-toggle="modal" data-target="#loanModal">Loan a Chromebook</button>
+            <button class="button button-loan btn-lg w-100" data-bs-toggle="modal" data-bs-target="#loanModal">Loan a Chromebook</button>
         </div>
         <div class="col-lg-6 col-md-12 mb-3">
-            <button class="button button-return btn-lg w-100" data-toggle="modal" data-target="#returnModal">Return a Chromebook</button>
+            <button class="button button-return btn-lg w-100" data-bs-toggle="modal" data-bs-target="#returnModal">Return a Chromebook</button>
         </div>
     </div>          
 
     <!-- Loan Chromebook Modal -->
-    <div class="modal fade" id="loanModal" tabindex="-1" role="dialog" aria-labelledby="loanModalLabel" aria-hidden="true">
+    <div class="modal fade" id="loanModal" tabindex="-1" aria-labelledby="loanModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="loanModalLabel">Loan a Chromebook</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="loanForm" action="{{ url_for('loan_chromebook') }}" method="post" onsubmit="return submitFormWithRetry('loanForm', 'loan-loading-indicator')">
                     <div class="modal-body">
@@ -72,14 +70,12 @@
     </div>
 
     <!-- Return Chromebook Modal -->
-    <div class="modal fade" id="returnModal" tabindex="-1" role="dialog" aria-labelledby="returnModalLabel" aria-hidden="true">
+    <div class="modal fade" id="returnModal" tabindex="-1" aria-labelledby="returnModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="returnModalLabel">Return a Chromebook</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <form id="returnForm" action="{{ url_for('return_chromebook') }}" method="post" onsubmit="return submitFormWithRetry('returnForm', 'return-loading-indicator')">
                     <div class="modal-body">
@@ -137,15 +133,20 @@
         alertDiv.style.top = '10%';
         alertDiv.style.left = '50%';
         alertDiv.style.transform = 'translateX(-50%)';
-        alertDiv.style.maxWidth = '400px'; // Set a max width for the alert
+        alertDiv.style.maxWidth = '400px';
         alertDiv.style.zIndex = '9999';
         alertDiv.textContent = message;
 
         document.body.appendChild(alertDiv);
 
         setTimeout(() => {
-            alertDiv.remove();
-        }, 4000); // Adjust time as needed
+            document.body.removeChild(alertDiv);
+        }, 4000);
+    }
+
+    function hideModal(modalId) {
+        var modal = new bootstrap.Modal(document.getElementById(modalId));
+        modal.hide();
     }
 
     function submitFormWithRetry(formId, loadingIndicatorId, maxRetries = 3) {
@@ -166,18 +167,15 @@
                     sessionStorage.setItem('isSuccess', 'true');
 
                     // Close the modal and redirect
-                    $('#' + formId).closest('.modal').modal('hide');
-                    $('#' + formId).closest('.modal').on('hidden.bs.modal', function () {
-                        window.location.href = "{{ url_for('home') }}";
-                    });
+                    hideModal(formId.replace('Form', 'Modal'));
+                    setTimeout(() => window.location.href = "{{ url_for('home') }}", 500);
                 } else {
                     popupAlert(data.message, false);
-                    document.getElementById(loadingIndicatorId).style.display = 'none'; // Hide loading indicator on failure
+                    document.getElementById(loadingIndicatorId).style.display = 'none';
 
-                    // Check if we should retry
                     if (data.message !== 'Chromebook is already loaned.' && data.message !== 'Chromebook is marked as missing and cannot be loaned.' && attemptCount < maxRetries) {
                         attemptCount++;
-                        setTimeout(trySubmit, 2000); // retry
+                        setTimeout(trySubmit, 2000);
                     }
                 }
             })
@@ -190,25 +188,22 @@
         }
 
         trySubmit();
-        return false; // prevent default form submission
+        return false;
     }
 
-    $(document).ready(function() {
-        // Check for a flash message in session storage
+    window.addEventListener('DOMContentLoaded', (event) => {
         const message = sessionStorage.getItem('flashMessage');
         const isSuccess = sessionStorage.getItem('isSuccess') === 'true';
 
         if (message) {
-            // Display the message
+            const flashMessageContainer = document.getElementById('flash-message-container');
             var alertType = isSuccess ? 'alert-success' : 'alert-danger';
-            $('#flash-message-container').html(`<div class="alert ${alertType}">${message}</div>`);
+            flashMessageContainer.innerHTML = `<div class="alert ${alertType}">${message}</div>`;
 
-            // Hide the flash message after 4 seconds
             setTimeout(function() {
-                $('#flash-message-container').fadeOut('slow');
+                flashMessageContainer.innerHTML = '';
             }, 4000);
 
-            // Clear the message from session storage
             sessionStorage.removeItem('flashMessage');
             sessionStorage.removeItem('isSuccess');
         }
