@@ -160,15 +160,13 @@
             .then(data => {
                 if (data.success) {
                     // Close the modal first
-                    $('.modal').modal('hide');
+                    $('#' + formId).closest('.modal').modal('hide');
                     // Wait for the modal to close
-                    $('.modal').on('hidden.bs.modal', function () {
-                        // Display the popup alert
-                        popupAlert(data.message, true);
-                        // Redirect after the message is displayed for 4 seconds
-                        setTimeout(() => {
-                            window.location.href = "{{ url_for('home') }}";
-                        }, 4000);
+                    $('#' + formId).closest('.modal').on('hidden.bs.modal', function () {
+                        // Redirect to home and store the message in session storage
+                        sessionStorage.setItem('flashMessage', data.message);
+                        sessionStorage.setItem('isSuccess', 'true');
+                        window.location.href = "{{ url_for('home') }}";
                     });
                 } else {
                     popupAlert(data.message, false);
@@ -190,12 +188,29 @@
         return false; // prevent default form submission
     }
 
-    $(document).ready(function() {
-        $(".alert").each(function() {
-            $(this).fadeTo(4000, 500).slideUp(500, function() {
-                $(this).remove();
-            });
+    function displayFlashMessage(message, isSuccess) {
+        const alertDiv = document.createElement('div');
+        alertDiv.classList.add('alert', isSuccess ? 'alert-success' : 'alert-danger');
+        alertDiv.role = 'alert';
+        alertDiv.textContent = message;
+        document.body.appendChild(alertDiv);
+        
+        $(alertDiv).fadeTo(4000, 500).slideUp(500, function() {
+            $(this).remove();
         });
+    }
+
+    $(document).ready(function() {
+        // Check for a flash message in session storage
+        const message = sessionStorage.getItem('flashMessage');
+        const isSuccess = sessionStorage.getItem('isSuccess') === 'true';
+
+        if (message) {
+            displayFlashMessage(message, isSuccess);
+            // Clear the message from session storage
+            sessionStorage.removeItem('flashMessage');
+            sessionStorage.removeItem('isSuccess');
+        }
     });
 </script>
 {% endblock %}
