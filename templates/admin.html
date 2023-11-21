@@ -203,42 +203,40 @@
                             title="Delete">
                             <i class="fas fa-trash fa-lg"></i>
                         </button>
-                    
+
                         <!-- Delete Confirmation Modal -->
-                        <div class="modal fade" id="confirmDeleteModal{{ chromebook.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel{{ chromebook.id }}" aria-hidden="true">
+                        <div class="modal fade" id="confirmDeleteModal{{ chromebook.id }}" tabindex="-1" aria-labelledby="confirmDeleteModalLabel{{ chromebook.id }}" aria-hidden="true">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title" id="confirmDeleteModalLabel">Delete Confirmation</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <div class="modal-body">
                                         Are you sure you want to delete this Chromebook?
                                     </div>
                                     <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                        <button type="button" class="btn btn-danger" onclick="submitDeleteForm();">Delete</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <!-- Ensure correct syntax for function call -->
+                                        <button type="button" class="btn btn-danger" onclick="submitDeleteForm({{ chromebook.id }});">Delete</button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     
                         <!-- Hidden Delete Form -->
-                        <form action="{{ url_for('delete_chromebook', chromebook_id=chromebook.id) }}" method="post" style="display:none;">
+                        <form action="{{ url_for('delete_chromebook', chromebook_id=chromebook.id) }}" method="post" style="display:none;"></form>
                         </form>
                     </td>                    
 
                         <!-- View Chromebook Modal -->
-                        <div class="modal fade" id="viewModal{{ chromebook.id }}" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel{{ chromebook.id }}" aria-hidden="true">
+                        <div class="modal fade" id="viewModal{{ chromebook.id }}" tabindex="-1" aria-labelledby="viewModalLabel{{ chromebook.id }}" aria-hidden="true">
+                            <!-- Modal dialog and content -->
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
                                     <div class="modal-header">
                                         <h5 class="modal-title" id="viewModalLabel{{ chromebook.id }}">View Chromebook</h5>
-                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">&times;</span>
-                                        </button>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                     </div>
                                     <form action="{{ url_for('edit_chromebook', chromebook_id=chromebook.id) }}" method="post">
                                         <div class="modal-body">
@@ -289,15 +287,15 @@
     </a>
 </div>
 
-<!-- JavaScript to submit the delete form -->
+<!-- JavaScript for Delete Form Submission -->
 <script>
     function submitDeleteForm(chromebookId) {
-    var form = document.querySelector(`form[action$='delete_chromebook/${chromebookId}']`);
-    if (form) {
-        form.submit();
-    } else {
-        console.error('Delete form not found for chromebookId:', chromebookId);
+        var form = document.querySelector(`form[action$='delete_chromebook/${chromebookId}']`);
+        if (form) {
+            form.submit();
+        } else {
+            console.error('Delete form not found for chromebookId:', chromebookId);
+        }
     }
-}
 </script>
 {% endblock %}
