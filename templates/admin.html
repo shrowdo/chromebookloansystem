@@ -197,16 +197,15 @@
                         </button>
 
                         <!-- Delete Button (Modified to trigger the confirmation modal) -->
-                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                        <button type="button" class="btn btn-outline-danger btn-sm"
                             data-toggle="modal" 
                             data-target="#confirmDeleteModal{{ chromebook.id }}" 
                             title="Delete">
                             <i class="fas fa-trash fa-lg"></i>
                         </button>
-
                     
                         <!-- Delete Confirmation Modal -->
-                        <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+                        <div class="modal fade" id="confirmDeleteModal{{ chromebook.id }}" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel{{ chromebook.id }}" aria-hidden="true">
                             <div class="modal-dialog" role="document">
                                 <div class="modal-content">
                                     <div class="modal-header">
@@ -295,9 +294,7 @@
 <!-- JavaScript to submit the delete form -->
 <script>
     function submitDeleteForm(chromebookId) {
-        var baseActionUrl = "{{ url_for('delete_chromebook', chromebook_id=0) }}";
-        var actionUrl = baseActionUrl.replace('0', chromebookId);
-        document.querySelector('form[action="' + actionUrl + '"]').submit();
-    }
+    document.querySelector(`form[action$='delete_chromebook/${chromebookId}']`).submit();
+}
 </script>
 {% endblock %}
