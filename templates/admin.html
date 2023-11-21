@@ -188,18 +188,18 @@
                     </td>                                                                                                                                                                                                        
                     <td>{{ chromebook.loaned_at|datetimefilter if chromebook.loaned_at else '' }}</td>
                     <td class="text-center">
-                        <!-- Button to trigger the view modal -->
+                        <!-- View Button -->
                         <button type="button" class="btn btn-outline-primary btn-sm mr-2" 
-                            data-toggle="modal" 
-                            data-target="#viewModal{{ chromebook.id }}" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#viewModal{{ chromebook.id }}" 
                             title="View">
                             <i class="fas fa-eye fa-lg"></i>
                         </button>
 
-                        <!-- Delete Button (Modified to trigger the confirmation modal) -->
+                        <!-- Delete Button -->
                         <button type="button" class="btn btn-outline-danger btn-sm"
-                            data-toggle="modal" 
-                            data-target="#confirmDeleteModal{{ chromebook.id }}" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#confirmDeleteModal{{ chromebook.id }}" 
                             title="Delete">
                             <i class="fas fa-trash fa-lg"></i>
                         </button>
@@ -292,7 +292,12 @@
 <!-- JavaScript to submit the delete form -->
 <script>
     function submitDeleteForm(chromebookId) {
-    document.querySelector(`form[action$='delete_chromebook/${chromebookId}']`).submit();
+    var form = document.querySelector(`form[action$='delete_chromebook/${chromebookId}']`);
+    if (form) {
+        form.submit();
+    } else {
+        console.error('Delete form not found for chromebookId:', chromebookId);
+    }
 }
 </script>
 {% endblock %}
