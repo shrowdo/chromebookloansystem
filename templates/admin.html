@@ -189,14 +189,21 @@
                     <td>{{ chromebook.loaned_at|datetimefilter if chromebook.loaned_at else '' }}</td>
                     <td class="text-center">
                         <!-- Button to trigger the view modal -->
-                        <button type="button" class="btn btn-outline-primary btn-sm mr-2" data-toggle="modal" data-target="#viewModal{{ chromebook.id }}" data-toggle="tooltip" data-placement="top" title="View">
+                        <button type="button" class="btn btn-outline-primary btn-sm mr-2" 
+                            data-toggle="modal" 
+                            data-target="#viewModal{{ chromebook.id }}" 
+                            title="View">
                             <i class="fas fa-eye fa-lg"></i>
                         </button>
-                        
+
                         <!-- Delete Button (Modified to trigger the confirmation modal) -->
-                        <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal" data-target="#confirmDeleteModal" data-toggle="tooltip" data-placement="top" title="Delete">
+                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                            data-toggle="modal" 
+                            data-target="#confirmDeleteModal{{ chromebook.id }}" 
+                            title="Delete">
                             <i class="fas fa-trash fa-lg"></i>
                         </button>
+
                     
                         <!-- Delete Confirmation Modal -->
                         <div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
