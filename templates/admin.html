@@ -16,7 +16,7 @@
 
     <!-- Navbar for Actions -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4">
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#actionsNavbar" aria-controls="actionsNavbar" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#actionsNavbar" aria-controls="actionsNavbar" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
 
@@ -24,14 +24,17 @@
             <ul class="navbar-nav mr-auto">
                 <!-- Add Chromebook -->
                 <li class="nav-item">
-                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#addChromebookModal" data-toggle="tooltip" title="Add a new Chromebook">
+                    <button type="button" class="btn btn-primary" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#addChromebookModal" 
+                        title="Add a new Chromebook">
                         <i class="fas fa-plus"></i> Add Chromebook
                     </button>
-                </li>
+                </li>                
 
                 <!-- Email Actions Dropdown -->
                 <li class="nav-item dropdown ml-3">
-                    <button class="btn btn-primary dropdown-toggle" type="button" id="emailActionsDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button class="btn btn-primary dropdown-toggle" type="button" id="emailActionsDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         <i class="fas fa-envelope"></i> Email Actions
                     </button>
                     <div class="dropdown-menu" aria-labelledby="emailActionsDropdown">
@@ -223,11 +226,6 @@
                         </form>
                     
                         <!-- JavaScript to submit the delete form -->
-                        <script>
-                            function submitDeleteForm() {
-                                document.querySelector('form[action="{{ url_for('delete_chromebook', chromebook_id=chromebook.id) }}"]').submit();
-                            }
-                        </script>
                     </td>                    
                         
                         <!-- View Chromebook Modal -->
@@ -288,4 +286,13 @@
         <i class="fas fa-home"></i> Back to Home
     </a>
 </div>
+
+<!-- JavaScript to submit the delete form -->
+<script>
+    function submitDeleteForm(chromebookId) {
+        var baseActionUrl = "{{ url_for('delete_chromebook', chromebook_id=0) }}";
+        var actionUrl = baseActionUrl.replace('0', chromebookId);
+        document.querySelector('form[action="' + actionUrl + '"]').submit();
+    }
+</script>
 {% endblock %}
