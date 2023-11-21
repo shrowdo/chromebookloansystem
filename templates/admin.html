@@ -196,10 +196,10 @@
                             <i class="fas fa-eye fa-lg"></i>
                         </button>
 
-                        <!-- Delete Button -->
                         <button type="button" class="btn btn-outline-danger btn-sm"
                             data-bs-toggle="modal" 
-                            data-bs-target="#confirmDeleteModal{{ chromebook.id }}" 
+                            data-bs-target="#confirmDeleteModal{{ chromebook.id }}"
+                            data-chromebook-id="{{ chromebook.id }}" <!-- Add this line -->
                             title="Delete">
                             <i class="fas fa-trash fa-lg"></i>
                         </button>
@@ -218,7 +218,9 @@
                                     <div class="modal-footer">
                                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                         <!-- Ensure correct syntax for function call -->
-                                        <button type="button" class="btn btn-danger" onclick="submitDeleteForm({{ chromebook.id }});">Delete</button>
+                                        <button type="button" class="btn btn-danger" onclick="submitDeleteForm(event);">
+                                            Delete
+                                        </button>                                        
                                     </div>
                                 </div>
                             </div>
@@ -289,7 +291,8 @@
 
 <!-- JavaScript for Delete Form Submission -->
 <script>
-    function submitDeleteForm(chromebookId) {
+    function submitDeleteForm(event) {
+        var chromebookId = event.currentTarget.getAttribute('data-chromebook-id');
         var form = document.querySelector(`form[action$='delete_chromebook/${chromebookId}']`);
         if (form) {
             form.submit();
